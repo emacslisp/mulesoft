@@ -63,4 +63,8 @@ payload map ( payload01 , indexOfPayload01 ) -> {
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="postFlow" doc:id="6efc000a-994d-438d-9eb8-9c090f7914e9" >
+		<http:listener doc:name="Listener" doc:id="afb4f68e-5b71-4fde-a615-173c2e183263" config-ref="HTTP_Listener_config" path="/flights" allowedMethods="POST"/>
+		<set-payload value='{"message":"Flight added (but not really)"}' doc:name="Set Payload" doc:id="2bf4ca97-b96d-4ef7-a6c4-4bd026ca2dbc" />
+	</flow>
 </mule>
