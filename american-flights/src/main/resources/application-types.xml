@@ -2,7 +2,10 @@
 <types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
   <types:catalog>
     <types:type name="american_flights_json" format="json">
-      <types:example format="json" location="examples/flight-example.json"/>
+      <types:example format="json" location="examples/flights-example-1.json"/>
+    </types:type>
+    <types:type name="json3" format="json">
+      <types:example format="json" location="examples/2.json"/>
     </types:type>
     <types:type name="json2" format="json">
       <types:example format="json" location="examples/flights-example.json"/>
@@ -12,7 +15,7 @@
     <types:processor-declaration>
       <types:output-event>
         <types:message>
-          <types:payload type="json2"/>
+          <types:payload type="american_flights_json"/>
         </types:message>
       </types:output-event>
     </types:processor-declaration>

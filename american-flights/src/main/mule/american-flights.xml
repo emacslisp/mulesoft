@@ -15,7 +15,8 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="american-flightsFlow" doc:id="f8e3c110-7380-4bb9-b0dc-02efead5d662" >
 		<http:listener doc:name="HTTP" doc:id="34d82e2e-11f9-4b89-bc21-8f7e63ba3862" config-ref="HTTP_Listener_config" path="/flights" allowedMethods="GET"/>
 		<db:select doc:name="Select" doc:id="a7a1d2ec-2b69-4345-91fd-b7053db40f89" config-ref="Database_Config_mysql">
-			<db:sql >select * from american</db:sql>
+			<db:sql >select * from american
+where ID = 1</db:sql>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="9d86cfcf-53bb-4231-a6b3-17f295773c80" >
 			<ee:message >
@@ -23,6 +24,33 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 output application/json
 ---
 payload map ( payload01 , indexOfPayload01 ) -> {
+	ID: payload01.ID,
+	airline: payload01.airlineName,
+	flightCode: (payload01.code1 default "") ++ (payload01.code2 default ""),
+	fromAirportCode: payload01.fromAirport,
+	toAirportCode: payload01.toAirport,
+	emptySeats: payload01.seatsAvailable,
+	totalSeats: payload01.totalSeats,
+	price: payload01.price,
+	planeType: payload01.planeType
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="american-flightsFlow-id" doc:id="f27ba25a-c1cb-445e-a9d7-10ae26b57a39" >
+		<http:listener doc:name="Listener" doc:id="e1649abb-7e92-410c-8f25-711561cf4956" config-ref="HTTP_Listener_config" path="/flights/{ID}"/>
+		<db:select doc:name="Select" doc:id="fe0eee78-66e3-4251-a222-a8c34ba0c2b0" config-ref="Database_Config_mysql">
+			<db:sql>select * from american 
+where ID = :ID</db:sql>
+			<db:input-parameters><![CDATA[#[{'ID': attributes.uriParams.ID}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9d86cfcf-53bb-4231-a6b3-17f295773c80" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	ID: payload01.ID,
 	airline: payload01.airlineName,
 	flightCode: (payload01.code1 default "") ++ (payload01.code2 default ""),
 	fromAirportCode: payload01.fromAirport,

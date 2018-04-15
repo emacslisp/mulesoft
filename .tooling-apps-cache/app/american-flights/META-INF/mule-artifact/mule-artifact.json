@@ -12,8 +12,12 @@
     "attributes": {
       "exportedResources": [
         "application-types.xml",
+        "examples/2.json",
+        "examples/american-flights-example-1.json",
+        "examples/american-flights-example-2.json",
         "examples/american-flights-example.json",
         "examples/flight-example.json",
+        "examples/flights-example-1.json",
         "examples/flights-example.json",
         "log4j2.xml"
       ]
