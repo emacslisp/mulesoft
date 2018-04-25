@@ -11,20 +11,20 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     <flow name="apdev-flights-ws6Flow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/united" allowedMethods="GET" doc:name="HTTP"/>
         <http:request config-ref="United_HTTP_Request_Configuration_2" path="/essentials/united/flights" method="GET" doc:name="United REST Request"/>
-        <dw:transform-message metadata:id="8e89da38-3229-4115-b6a8-7c0f03f66a15" doc:name="Transform Message">
+        <dw:transform-message metadata:id="c46e4bf0-0ed2-4046-873f-20257e901023" doc:name="Transform Message">
             <dw:input-payload/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/json
 ---
 payload.flights map ((flight , indexOfFlight) -> {
-	airline: flight.airlineName,
-	flightCode: flight.code,
-	fromAirportCode: flight.origin,
-	toAirportCode: flight.destination,
-	departureDate: flight.departureDate,
-	emptySeats: flight.emptySeats,
+	code: flight.code,
 	price: flight.price,
-	planeType: flight.planeType
+	origin: flight.origin,
+	destination: flight.destination,
+	departureDate: flight.departureDate,
+	planeType: flight.planeType,
+	airlineName: flight.airlineName,
+	emptySeats: flight.emptySeats
 })]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
