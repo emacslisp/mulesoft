@@ -10,7 +10,12 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
     <flow name="apdev-flights-ws6Flow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/united" allowedMethods="GET" doc:name="HTTP"/>
-        <http:request config-ref="United_HTTP_Request_Configuration_2" path="/essentials/united/flights" method="GET" doc:name="United REST Request"/>
+        <set-variable variableName="code" value="#[message.inboundProperties.'http.query.params'.code == empty? &quot;SFO&quot;:message.inboundProperties.'http.query.params'.code]" doc:name="Variable"/>
+        <http:request config-ref="United_HTTP_Request_Configuration_2" path="/essentials/united/flights/{destination}" method="GET" doc:name="United REST Request">
+            <http:request-builder>
+                <http:uri-param paramName="destination" value="#[flowVars.code]"/>
+            </http:request-builder>
+        </http:request>
         <dw:transform-message metadata:id="c46e4bf0-0ed2-4046-873f-20257e901023" doc:name="Transform Message">
             <dw:input-payload/>
             <dw:set-payload><![CDATA[%dw 1.0
