@@ -107,19 +107,6 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
 })]]></dw:set-payload>
         </dw:transform-message>
 	<logger level="INFO" doc:name="Logger" />
-	<choice-exception-strategy doc:name="apdev-flights-ws6Choice_Exception_Strategy">
-		<catch-exception-strategy doc:name="NO Flight - DW Exception" when="#[exception.causeMatches('com.mulesoft.weave.*')]">
-			<set-payload value="NO FLIGHT to #[flowVars.code + '\n' + exception]"
-				doc:name="Set Payload" />
-			<set-property propertyName="http.status" value="400"
-				doc:name="Property" />
-			<logger level="INFO" doc:name="Logger" />
-		</catch-exception-strategy>
-		<catch-exception-strategy doc:name="DATA Unavailiable - all other exception" >
-                <set-payload value="DATA is unavailable + #['\n' + exception]" doc:name="Set Payload"/>
-                <set-property propertyName="http.status" value="500" doc:name="Property"/>
-                <logger level="INFO" doc:name="Logger"/>
-            </catch-exception-strategy>
-	</choice-exception-strategy>
+
     </flow>
 </mule>

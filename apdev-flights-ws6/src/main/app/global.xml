@@ -1,12 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:spring="http://www.springframework.org/schema/beans" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<mule xmlns:cluster="http://www.mulesoft.org/schema/mule/ee/cluster" xmlns:ws="http://www.mulesoft.org/schema/mule/ws" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd">
-    <http:request-config name="United_HTTP_Request_Configuration_2" host="mu.mulesoft-training.com" port="80" doc:name="HTTP Request Configuration"/>
-    <ws:consumer-config name="Delta_Web_Service_Consumer" service="TicketServiceService" port="TicketServicePort" serviceAddress="http://mule-worker-training-u.cloudhub.io:8081/essentials/delta" wsdlLocation="http://mu.mulesoft-training.com/essentials/delta?wsdl" doc:name="Web Service Consumer"/>
+	<http:request-config name="United_HTTP_Request_Configuration_2"
+		host="mu.mulesoft-training.com" port="80" doc:name="HTTP Request Configuration" />
+	<ws:consumer-config name="Delta_Web_Service_Consumer"
+		service="TicketServiceService" port="TicketServicePort"
+		serviceAddress="http://mule-worker-training-u.cloudhub.io:8081/essentials/delta"
+		wsdlLocation="http://mu.mulesoft-training.com/essentials/delta?wsdl"
+		doc:name="Web Service Consumer" />
+    <configuration defaultExceptionStrategy-ref="apdev-flights-ws6Choice_Exception_Strategy" doc:name="Configuration">
+        <http:config useTransportForUris="false"/>
+    </configuration>
+	<choice-exception-strategy name="apdev-flights-ws6Choice_Exception_Strategy" >
+		<catch-exception-strategy doc:name="NO Flight - DW Exception"
+			when="#[exception.causeMatches('com.mulesoft.weave.*')]">
+			<set-payload value="NO FLIGHT to #[flowVars.code + '\n' + exception]"
+				doc:name="Set Payload" />
+			<set-property propertyName="http.status" value="400"
+				doc:name="Property" />
+			<logger level="INFO" doc:name="Logger" />
+		</catch-exception-strategy>
+		<catch-exception-strategy doc:name="DATA Unavailiable - all other exception">
+			<set-payload value="DATA is unavailable + #['\n' + exception]"
+				doc:name="Set Payload" />
+			<set-property propertyName="http.status" value="500"
+				doc:name="Property" />
+			<logger level="INFO" doc:name="Logger" />
+		</catch-exception-strategy>
+	</choice-exception-strategy>
 </mule>
