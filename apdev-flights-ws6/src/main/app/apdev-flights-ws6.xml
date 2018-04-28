@@ -16,13 +16,27 @@ http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/cu
     </http:request-config>
     <flow name="getFlightsFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/flights" doc:name="HTTP"/>
-        <flow-ref name="getDeltaFlightsFlow" doc:name="getDeltaFlightsFlow"/>
+        <set-variable variableName="airline" value="#[message.inboundProperties.'http.query.params'.airline]" doc:name="Variable"/>
+        <choice doc:name="Choice">
+            <when expression="#[flowVars.airline==&quot;delta&quot;]">
+                <flow-ref name="getDeltaFlightsFlow" doc:name="getDeltaFlightsFlow"/>
+            </when>
+            <when expression="#[flowVars.airline==&quot;united&quot;]">
+                <flow-ref name="getUnitedFlightsFlow" doc:name="getUnitedFlightsFlow"/>
+            </when>
+            <when expression="#[flowVars.airline==&quot;american&quot;]">
+                <flow-ref name="getAmericanFlightsFlow" doc:name="getAmericanFlightsFlow"/>
+            </when>
+            <otherwise>
+                <logger level="INFO" doc:name="Logger"/>
+            </otherwise>
+        </choice>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
     <sub-flow name="setCodeSubflow">
         <set-variable variableName="code" value="#[message.inboundProperties.'http.query.params'.code == empty? &quot;SFO&quot;:message.inboundProperties.'http.query.params'.code]" doc:name="Set airport code variable"/>
     </sub-flow>
-    <flow name="apdev-flights-ws6Flow">
+    <flow name="getUnitedFlightsFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/united" allowedMethods="GET" doc:name="HTTP"/>
         <flow-ref name="setCodeSubflow" doc:name="setCodeSubflow"/>
         <http:request config-ref="United_HTTP_Request_Configuration_2" path="/essentials/united/flights/{destination}" method="GET" doc:name="United REST Request">
@@ -48,7 +62,7 @@ payload.flights map ((flight , indexOfFlight) -> {
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
-    <flow name="apdev-flights-ws6Flow1">
+    <flow name="getAmericanFlightsFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/american" allowedMethods="GET" doc:name="HTTP"/>
         <set-variable variableName="ID" value="#[message.inboundProperties.'http.query.params'.ID == empty? 1:message.inboundProperties.'http.query.params'.ID]" doc:name="Variable"/>
         <http:request config-ref="HTTP_Request_Configuration" path="/flights/{ID}" method="GET" doc:name="American REST Request">
