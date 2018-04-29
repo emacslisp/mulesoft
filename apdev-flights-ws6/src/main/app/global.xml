@@ -17,6 +17,7 @@ http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/cu
     <configuration defaultExceptionStrategy-ref="apdev-flights-ws6Choice_Exception_Strategy" doc:name="Configuration">
         <http:config useTransportForUris="false"/>
     </configuration>
+    <payload-type-filter expectedType="java.util.List" name="Filter_NOT_LIST" doc:name="Payload"/>
 	<choice-exception-strategy name="apdev-flights-ws6Choice_Exception_Strategy" >
 		<catch-exception-strategy doc:name="NO Flight - DW Exception"
 			when="#[exception.causeMatches('com.mulesoft.weave.*')]">
