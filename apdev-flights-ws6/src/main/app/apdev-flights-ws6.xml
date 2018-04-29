@@ -30,6 +30,22 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
                 <flow-ref name="getAllAirlineFlights" doc:name="getAllAirlineFlights"/>
             </otherwise>
         </choice>
+        <validation:is-not-empty value="#[payload]" message="Payload is empty" doc:name="Validation"/>
+        <dw:transform-message metadata:id="bc8ac939-6e21-4e2d-b65a-183d0a5d380d" doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	code: payload01.flightCode,
+	price: payload01.price,
+	origin: payload01.origination,
+	destination: payload01.destination,
+	departureDate: payload01.departureDate,
+	planeType: payload01.planeType,
+	airlineName: payload01.airlineName,
+	emptySeats: payload01.availableSeats
+})]]></dw:set-payload>
+        </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
     <sub-flow name="setCodeSubflow">
@@ -119,8 +135,14 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
     </flow>
     <flow name="getAllAirlineFlights">
         <scatter-gather doc:name="Scatter-Gather">
-            <flow-ref name="getDeltaFlightsFlow" doc:name="getDeltaFlightsFlow"/>
-            <flow-ref name="getUnitedFlightsFlow" doc:name="getUnitedFlightsFlow"/>
+            <processor-chain>
+                <flow-ref name="getDeltaFlightsFlow" doc:name="getDeltaFlightsFlow"/>
+                <filter ref="Filter_NOT_LIST" doc:name="Delta_Filter_NOT_List"/>
+            </processor-chain>
+            <processor-chain>
+                <flow-ref name="getUnitedFlightsFlow" doc:name="getUnitedFlightsFlow"/>
+                <filter ref="Filter_NOT_LIST" doc:name="United_Filter_NOT_LIST"/>
+            </processor-chain>
         </scatter-gather>
         <logger level="INFO" doc:name="Logger"/>
     </flow>

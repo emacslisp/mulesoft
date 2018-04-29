@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/ws http://www.mulesoft.org/schema/mule/ws/cu
     <payload-type-filter expectedType="java.util.List" name="Filter_NOT_LIST" doc:name="Payload"/>
 	<choice-exception-strategy name="apdev-flights-ws6Choice_Exception_Strategy" >
 		<catch-exception-strategy doc:name="NO Flight - DW Exception"
-			when="#[exception.causeMatches('com.mulesoft.weave.*')]">
+			when="#[exception.causeMatches('com.mulesoft.weave.*') || exception.message == 'Payload is empty']">
 			<set-payload value="NO FLIGHT to #[flowVars.code + '\n' + exception]"
 				doc:name="Set Payload" />
 			<set-property propertyName="http.status" value="400"
