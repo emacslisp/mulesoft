@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
         <http:raml-api-configuration location="https://anypoint.mulesoft.com/exchange/api/v1/organizations/68ef9520-24e9-4cf2-b2f5-620025690913/assets/68ef9520-24e9-4cf2-b2f5-620025690913/training-american-flights-api/1.0.1/api/root"/>
     </http:request-config>
     <flow name="getFlightsFlow">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/flights" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/flights" doc:name="HTTP" allowedMethods="GET"/>
         <set-variable variableName="airline" value="#[message.inboundProperties.'http.query.params'.airline]" doc:name="Variable"/>
         <flow-ref name="setCodeSubflow" doc:name="setCodeSubflow"/>
         <choice doc:name="Choice">
@@ -144,6 +144,17 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
                 <filter ref="Filter_NOT_LIST" doc:name="United_Filter_NOT_LIST"/>
             </processor-chain>
         </scatter-gather>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="postFlightFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/flights" allowedMethods="POST" doc:name="HTTP"/>
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+{
+}]]></dw:set-payload>
+        </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
 </mule>
