@@ -5,9 +5,7 @@
             "typeId": "flights_example_json"
         }
     },
-    "outputMessageMetadata": {
-        "messagePayload": {}
-    },
-    "id": "37d73145-01b3-4246-a18d-ceb21e8d1158",
+    "outputMessageMetadata": {},
+    "id": "273bd3fd-1b34-4595-b2cd-c099b5b20ab8",
     "version": "5.2.0.0"
 }
