@@ -157,14 +157,18 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
     <flow name="postMultipleFlightsFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/multipleFlights" allowedMethods="POST" doc:name="HTTP"/>
         <dw:transform-message metadata:id="273bd3fd-1b34-4595-b2cd-c099b5b20ab8" doc:name="Transform Message">
-            <dw:input-payload doc:sample="/Users/ewu/Downloads/MUFundamentals3.9_studentFiles_07mar2018/examples/flight-example.json"/>
+            <dw:input-payload doc:sample="/Users/ewu/Downloads/MUFundamentals3.9_studentFiles_07mar2018/examples/flights-example.xml"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
+%namespace ns0 http://soap.training.mulesoft.com/
 ---
-payload map {
-	flight: $$,
-	($$): $
-}]]></dw:set-payload>
+flights: {(payload.ns0#listAllFlightsResponse.return map {
+	flight: {
+		dest: $.destination,
+		price: $.price
+	}
+}	
+)}]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
