@@ -162,13 +162,13 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
 %output application/java
 %namespace ns0 http://soap.training.mulesoft.com/
 ---
-flights: {(payload.ns0#listAllFlightsResponse.return map {
-	flight: {
+flights: payload.ns0#listAllFlightsResponse.*return map {
 		dest: $.destination,
-		price: $.price
-	}
+		price: $.price as :number as :string {format: "###.00"},
+		plane: upper $.planeType,
+		date: $.departureDate as :date {format : "yyyy/MM/dd"} as :string {format: "MMM, dd, yyyy"}
 }	
-)}]]></dw:set-payload>
+]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
