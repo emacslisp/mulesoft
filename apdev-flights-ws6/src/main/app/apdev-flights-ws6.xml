@@ -165,9 +165,9 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
 flights: payload.ns0#listAllFlightsResponse.*return map {
 		dest: $.destination,
 		price: $.price as :number as :string {format: "###.00"},
-		plane: upper $.planeType,
+		plane: upper $.planeType replace /(BOING)/ with "BOEING",
 		date: $.departureDate as :date {format : "yyyy/MM/dd"} as :string {format: "MMM, dd, yyyy"}
-}	
+} orderBy $.date orderBy $.price
 ]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
