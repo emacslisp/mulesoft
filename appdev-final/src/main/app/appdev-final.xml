@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -9,9 +9,13 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
     <sfdc:config name="Salesforce__Basic_Authentication" username="java.gdb@gmail.com" password="pi=3.1415" securityToken="GWQtfpRW7bOUDdlr86yOxzFu" doc:name="Salesforce: Basic Authentication"/>
+    <db:mysql-config name="MySQL_Configuration" host="mudb.mulesoft-training.com" port="3306" user="mule" password="mule" database="training" doc:name="MySQL Configuration"/>
+    <jms:activemq-connector name="Active_MQ" specification="1.1" brokerURL="tcp://jms.mulesoft-training.com:61616" validateConnections="true" doc:name="Active MQ"/>
     <flow name="appdev-finalFlow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/sfdc" doc:name="HTTP"/>
         <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT BillingCity,BillingCountry,BillingGeocodeAccuracy,BillingPostalCode,BillingState,BillingStreet,Name FROM Account WHERE BillingPostalCode = '27215'" doc:name="Salesforce"/>
@@ -35,5 +39,26 @@ payload]]></dw:set-payload>
 }]]></dw:set-payload>
         </dw:transform-message>
         <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="pollDatabaseFlow" initialState="stopped" processingStrategy="synchronous">
+        <poll doc:name="Poll">
+            <fixed-frequency-scheduler frequency="5"/>
+            <watermark variable="lastAccountID" default-expression="0" selector="MAX" selector-expression="#[payload.accountID]"/>
+            <db:select config-ref="MySQL_Configuration" doc:name="Database">
+                <db:parameterized-query><![CDATA[select *
+from accounts
+where postal = '80305' and accountID > #[flowVars.lastAccountID]]]></db:parameterized-query>
+            </db:select>
+        </poll>
+        <logger level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="getTopicMessagesFlow" initialState="started">
+        <jms:inbound-endpoint topic="apessentials" connector-ref="Active_MQ" doc:name="JMS"/>
+        <logger level="INFO" doc:name="Logger" message="#[payload]"/>
+    </flow>
+    <flow name="appdev-finalFlow1">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/jms" allowedMethods="GET" doc:name="HTTP"/>
+        <set-payload value="#[message.inboundProperties.'http.query.params'.name] : #[message.inboundProperties.'http.query.params'.messageBody]" doc:name="Set Payload"/>
+        <jms:outbound-endpoint topic="apessentials" connector-ref="Active_MQ" doc:name="JMS"/>
     </flow>
 </mule>
