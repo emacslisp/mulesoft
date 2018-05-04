@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -11,7 +11,8 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
     <sfdc:config name="Salesforce__Basic_Authentication" username="java.gdb@gmail.com" password="pi=3.1415" securityToken="GWQtfpRW7bOUDdlr86yOxzFu" doc:name="Salesforce: Basic Authentication"/>
     <db:mysql-config name="MySQL_Configuration" host="mudb.mulesoft-training.com" port="3306" user="mule" password="mule" database="training" doc:name="MySQL Configuration"/>
@@ -27,7 +28,7 @@ payload]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
-    <flow name="getCSVAccountsFlow">
+    <flow name="getCSVAccountsFlow" initialState="stopped">
         <file:inbound-endpoint path="src/main/resources/input" moveToPattern="#[message.inboundProperties.originalFilename].backup" moveToDirectory="src/main/resources/output" responseTimeout="10000" doc:name="File">
             <file:filename-regex-filter pattern=".*csv" caseSensitive="true"/>
         </file:inbound-endpoint>
@@ -63,4 +64,28 @@ where postal = '80305' and accountID > #[flowVars.lastAccountID]]]></db:paramete
         <set-payload value="#[message.inboundProperties.'http.query.params'.name] : #[message.inboundProperties.'http.query.params'.messageBody]" doc:name="Set Payload"/>
         <jms:outbound-endpoint topic="apessentials" connector-ref="Active_MQ" doc:name="JMS"/>
     </flow>
+    <batch:job name="getCSVAccountBatch">
+        <batch:input>
+            <file:inbound-endpoint path="src/main/resources/input" moveToPattern="#[message.inboundProperties.originalFilename].backup" moveToDirectory="src/main/resources/output" responseTimeout="10000" doc:name="File">
+                <file:filename-regex-filter pattern=".*csv" caseSensitive="true"/>
+            </file:inbound-endpoint>
+            <dw:transform-message doc:name="Transform Message">
+                <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-payload>
+            </dw:transform-message>
+            <set-variable variableName="size" value="#[payload.size()]" doc:name="set size flowVar"/>
+        </batch:input>
+        <batch:process-records>
+            <batch:step name="Batch_Step">
+                <set-variable variableName="fname" value="#[payload.Name]" doc:name="set fname flowVar"/>
+                <batch:set-record-variable variableName="rname" value="#[payload.Name]" doc:name="set rname to record variable"/>
+                <logger message="#[recordVars.rname]" level="INFO" doc:name="Logger"/>
+            </batch:step>
+            <batch:step name="Batch_Step1">
+                <logger message="#[recordVars.rname]" level="INFO" doc:name="Logger"/>
+            </batch:step>
+        </batch:process-records>
+    </batch:job>
 </mule>
