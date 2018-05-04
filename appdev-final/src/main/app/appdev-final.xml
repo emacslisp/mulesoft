@@ -17,7 +17,50 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
     <sfdc:config name="Salesforce__Basic_Authentication" username="java.gdb@gmail.com" password="pi=3.1415" securityToken="GWQtfpRW7bOUDdlr86yOxzFu" doc:name="Salesforce: Basic Authentication"/>
     <db:mysql-config name="MySQL_Configuration" host="mudb.mulesoft-training.com" port="3306" user="mule" password="mule" database="training" doc:name="MySQL Configuration"/>
     <jms:activemq-connector name="Active_MQ" specification="1.1" brokerURL="tcp://jms.mulesoft-training.com:61616" validateConnections="true" doc:name="Active MQ"/>
-    <flow name="appdev-finalFlow">
+    <batch:job name="pollDatabaseBatch">
+        <batch:input>
+            <poll doc:name="Poll">
+                <fixed-frequency-scheduler frequency="5"/>
+                <watermark variable="lastAccountID" default-expression="0" selector="MAX" selector-expression="#[payload.accountID]"/>
+                <db:select config-ref="MySQL_Configuration" doc:name="Database">
+                    <db:parameterized-query><![CDATA[select *
+from accounts
+where postal = '80305' and accountID > 6850]]></db:parameterized-query>
+                </db:select>
+            </poll>
+            <dw:transform-message doc:name="Transform Message">
+                <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	Id: payload01.accountID as :string,
+	Name: payload01.name,
+	BillingStreet: payload01.street,
+	BillingCity: payload01.city,
+	BillingState: payload01.state,
+	BillingPostalCode: payload01.postal,
+	BillingCountry: payload01.country
+})]]></dw:set-payload>
+            </dw:transform-message>
+        </batch:input>
+        <batch:process-records>
+            <batch:step name="Batch_Step3">
+                <enricher source="#[payload.size() &gt; 0]" target="#[recordVars.exists]" doc:name="Message Enricher">
+                    <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT Name FROM Account WHERE Name = '#[payload.Name]'" doc:name="Check for duplicate in SFDC"/>
+                </enricher>
+                <logger message="#['\n\nRECORD: ' + payload]" level="INFO" doc:name="Logger"/>
+            </batch:step>
+            <batch:step name="Batch_Step2" accept-expression="#[!recordVars.exists]">
+                <batch:commit size="10" doc:name="Batch Commit">
+                    <sfdc:create config-ref="Salesforce__Basic_Authentication" type="Account" doc:name="Insert new records into SFDC">
+                        <sfdc:objects ref="#[payload]"/>
+                    </sfdc:create>
+                </batch:commit>
+                <logger message="#['\n\nRECORD was inserted: ' + payload + '\n\n\n']" level="INFO" doc:name="Logger"/>
+            </batch:step>
+        </batch:process-records>
+    </batch:job>
+    <flow name="appdev-finalFlow" initialState="stopped">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/sfdc" doc:name="HTTP"/>
         <sfdc:query config-ref="Salesforce__Basic_Authentication" query="dsql:SELECT BillingCity,BillingCountry,BillingGeocodeAccuracy,BillingPostalCode,BillingState,BillingStreet,Name FROM Account WHERE BillingPostalCode = '27215'" doc:name="Salesforce"/>
         <dw:transform-message doc:name="Transform Message">
