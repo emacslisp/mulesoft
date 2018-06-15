@@ -1,0 +1,20 @@
+{
+    "inputMessageMetadata": {
+        "inboundProperties": {
+            "http.scheme": {
+                "dataType": "UNKNOWN",
+                "metaDataModelPropertiesManager": {
+                    "properties": []
+                }
+            }
+        }
+    },
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "mule_json"
+        }
+    },
+    "id": "fb49f695-3102-4fa5-adbe-177a015db26e",
+    "version": "5.2.0.0"
+}
