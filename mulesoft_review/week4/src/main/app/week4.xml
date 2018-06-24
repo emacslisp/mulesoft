@@ -14,14 +14,14 @@ http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/cu
         <async doc:name="Async">
             <set-variable variableName="qpname" value="4" doc:name="Set Variable Value - Four"/>
         </async>
-        <set-payload doc:name="Set Payload"/>
+        <set-payload value="#[flowVars.qpName]" doc:name="Set Payload"/>
     </flow>
     <sub-flow name="Subflow">
         <set-variable variableName="qpName" value="2" doc:name="Set Variable Value - Two"/>
-        <vm:outbound-endpoint exchange-pattern="one-way" responseTimeout="" doc:name="VM"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="vmflow" doc:name="VM"/>
     </sub-flow>
     <flow name="week4Flow1">
-        <vm:inbound-endpoint exchange-pattern="one-way" responseTimeout="" doc:name="VM"/>
+        <vm:inbound-endpoint exchange-pattern="request-response" path="vmflow" doc:name="VM"/>
         <logger level="INFO" doc:name="Logger"/>
         <set-variable variableName="qpname" value="3" doc:name="Variable"/>
     </flow>
