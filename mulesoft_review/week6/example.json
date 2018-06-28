@@ -1,0 +1,21 @@
+{
+    "purchaseOrder":{
+        "lineItems":[
+            {
+                "item1":{
+                    "itemName": "iPhone 8",
+                    "price": 899,
+                    "quantity": 1
+                }
+            },
+            {
+                "item2":{
+                    "itemName": "iPhone 8 Power Cable",
+                    "price": 29.98,
+                    "quantity": 2
+                }
+            }
+        ]
+    }
+
+}

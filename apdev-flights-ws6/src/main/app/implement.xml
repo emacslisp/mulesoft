@@ -40,5 +40,8 @@ payload.ns0#findFlightResponse.*return map ((return , indexOfReturn) -> {
 })]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Copy_of_Logger"/>
+        <choice-exception-strategy doc:name="Choice Exception Strategy">
+            <catch-exception-strategy doc:name="Catch Exception Strategy"/>
+        </choice-exception-strategy>
     </flow>
 </mule>
