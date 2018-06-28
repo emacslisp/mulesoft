@@ -11,13 +11,13 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
     <flow name="week6Flow">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/flights" doc:name="HTTP"/>
         <dw:transform-message doc:name="Transform Message" metadata:id="b10c350f-21c5-4bad-b357-59530b3a1404">
-            <dw:input-payload doc:sample="sample_data/string.dwl" mimeType="application/json"/>
+            <dw:input-payload doc:sample="example.json" mimeType="application/json"/>
             <dw:set-payload><![CDATA[%dw 1.0
 %output application/json
 ---
 payload.purchaseOrder.lineItems map ((itemObjects) ->
 {
-	itemNameString: itemObjects[0]
+	itemNameString: itemObjects[0].itemName
 }
 )]]></dw:set-payload>
         </dw:transform-message>
@@ -29,5 +29,16 @@ payload.purchaseOrder.lineItems map ((itemObjects) ->
 }" doc:name="Set Payload"/>
             <logger level="INFO" doc:name="Logger"/>
         </catch-exception-strategy>
+    </flow>
+    <flow name="week6Flow1">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/xml" doc:name="HTTP"/>
+        <dw:transform-message doc:name="Transform Message" metadata:id="8bace2b8-95ff-4f25-995a-0b5ae62ad236">
+            <dw:input-payload doc:sample="input.xml" mimeType="application/xml"/>
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload.music.artists.*artist.discography.*album]]></dw:set-payload>
+        </dw:transform-message>
+        <logger level="INFO" doc:name="Logger"/>
     </flow>
 </mule>
