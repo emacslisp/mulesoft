@@ -1,21 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<music>
-	<owner>Joan Doe</owner>
-	<artists>
-		<artist name="Black Sabbath">
-			<discography>
-				<album>Black Sabbath</album>
-				<album>Paranoid</album>
-				<album>Heave and Hell</album>
-				<album>Mob Rules</album>
-			</discography>
-		</artist>
-		
-		<artist name="Dio">
-			<discography>
-				<album>Holy Diver</album>
-				<album>The Last in line</album>
-			</discography>
-		</artist>
-	</artists>
-</music>
+[
+	{
+	"firstname":"Max",
+	"lastname":"Mule"
+	},
+	{
+	"firstname":"Molly",
+	"lastname":"Mule"
+	}
+]

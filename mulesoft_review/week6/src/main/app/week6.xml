@@ -34,11 +34,16 @@ payload.purchaseOrder.lineItems map ((itemObjects) ->
     <flow name="week6Flow1">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/xml" doc:name="HTTP"/>
         <dw:transform-message doc:name="Transform Message" metadata:id="8bace2b8-95ff-4f25-995a-0b5ae62ad236">
-            <dw:input-payload doc:sample="input.xml" mimeType="application/xml"/>
+            <dw:input-payload doc:sample="input.xml" mimeType="application/json"/>
             <dw:set-payload><![CDATA[%dw 1.0
-%output application/json
+%output application/xml
 ---
-payload.music.artists.*artist.discography.*album]]></dw:set-payload>
+users: no-fuck: {	( payload map {
+xx: yy: fuck:{
+fname : $.firstname,
+lname : $.lastname	
+}
+})}]]></dw:set-payload>
         </dw:transform-message>
         <logger level="INFO" doc:name="Logger"/>
     </flow>
