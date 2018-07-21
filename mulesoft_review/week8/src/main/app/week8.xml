@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:context="http://www.springframework.org/schema/context" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:context="http://www.springframework.org/schema/context" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
@@ -11,11 +11,14 @@ http://www.springframework.org/schema/context http://www.springframework.org/sch
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
-http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
     <context:property-placeholder location="config-DEV.properties"/>
     <jms:activemq-connector name="Active_MQ" specification="1.1" brokerURL="${jms.broker}" validateConnections="true" doc:name="Active MQ"/>
     <db:mysql-config name="MySQL_Configuration" host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" doc:name="MySQL Configuration"/>
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Request_Configuration" host="0.0.0.0" port="8081" doc:name="HTTP Request Configuration"/>
     <flow name="week8Flow">
         <poll doc:name="Poll">
             <fixed-frequency-scheduler frequency="8" timeUnit="SECONDS"/>
@@ -58,7 +61,25 @@ payload]]></dw:set-payload>
             <logger message="#[recordVars]" level="INFO" doc:name="Logger"/>
         </batch:on-complete>
     </batch:job>
+    <flow name="setVariable">
+        <set-variable variableName="qpname" value="#[&quot;Orange&quot;]" doc:name="Variable"/>
+    </flow>
+    <flow name="setVM">
+        <vm:inbound-endpoint exchange-pattern="request-response" path="queue" doc:name="VM"/>
+        <set-payload value="#[&quot;vmflow payload&quot;]" doc:name="Set Payload"/>
+        <set-variable variableName="qpname" value="#[&quot;Banana&quot;]" doc:name="Variable"/>
+    </flow>
+    <flow name="week8Flow5">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/flow2" doc:name="HTTP"/>
+        <set-payload value="#[&quot;this is flow2 payload&quot;]" doc:name="Set Payload"/>
+        <set-variable variableName="qpname" value="#[&quot;week8 flow5 qpname&quot;]" doc:name="Variable"/>
+    </flow>
     <flow name="week8Flow4">
-        <foreach doc:name="For Each" collection="#[payload]"/>
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/variable" doc:name="HTTP"/>
+        <set-variable variableName="qpname" value="#[&quot;Apple&quot;]" doc:name="Variable"/>
+        <flow-ref name="setVariable" doc:name="Flow Reference"/>
+        <set-payload value="#[&quot;this is main payload&quot;]" doc:name="Set Payload"/>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="queue" doc:name="VM"/>
+        <logger message="#[flowVars.qpname]" level="INFO" doc:name="Logger"/>
     </flow>
 </mule>
