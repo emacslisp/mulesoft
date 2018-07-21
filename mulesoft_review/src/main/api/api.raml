@@ -6,7 +6,14 @@ version: 1.0
 /flights:
   get:
     queryParameters: 
-      code:
+      code: 
+        enum:
+          - abc
+          - def
+          - ghi
+      fuck:
+        enum:
+          [xxx, yyy, zz]
     responses: 
       200:
         body: 

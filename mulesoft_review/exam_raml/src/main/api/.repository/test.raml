@@ -1,0 +1,25 @@
+#%RAML 1.0
+title: Test
+version: 1.0
+baseUri: http://localhost:8081/api
+
+/catalog:
+  /book:
+    displayName: books
+    post:
+      description: add a new book to catalog
+      body:
+        application/json:
+          example: !include book-catalogue-example.json
+      responses:
+        201:
+          body:
+            application/json:
+              example: !include book-catalogue-example.json
+        500:
+          body:
+            application/json:
+              example: |
+                {
+                  "errorMessage":"the book couldn't be entitled"
+                }

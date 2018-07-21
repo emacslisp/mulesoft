@@ -49,7 +49,7 @@ payload map ((payload01 , indexOfPayload01) -> {
     <flow name="apdev-americanFlow2">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/hello" doc:name="HTTP"/>
         <set-payload value="Hello World" doc:name="Set Payload"/>
-        <set-property propertyName="qpname" value="max" doc:name="Property"/>
+        <set-property propertyName="qpname" value="#[payload]" doc:name="Property"/>
         <logger message="#[flowVars.qpname]" level="INFO" doc:name="Logger"/>
     </flow>
 </mule>

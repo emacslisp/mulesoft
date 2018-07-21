@@ -59,6 +59,6 @@ payload]]></dw:set-payload>
         </batch:on-complete>
     </batch:job>
     <flow name="week8Flow4">
-        <foreach doc:name="For Each"/>
+        <foreach doc:name="For Each" collection="#[payload]"/>
     </flow>
 </mule>
